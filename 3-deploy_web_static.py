@@ -1,80 +1,91 @@
 #!/usr/bin/python3
+"""a script to pack static content into a tarball
 """
-creates and distributes an archive to your web servers
-fab -f 3-deploy_web_static.py deploy -i ssh-key -u ubuntu
-"""
-
+from fabric.api import *
+from fabric.operations import put
 from datetime import datetime
-import os.path
-from fabric.api import put, run, env, local
+import os
 
-env.hosts = ['35.243.128.200', '3.239.120.96']
+env.hosts = ['35.243.204.105', '35.190.182.239']
 
 
 def do_pack():
+    """packages all contents from web_static into .tgz archive
     """
-    making an archive on web_static folder
-    """
-    dt = datetime.utcnow()
-    file = "versions/web_static_{}{}{}{}{}{}.tgz".format(dt.year,
-                                                         dt.month,
-                                                         dt.day,
-                                                         dt.hour,
-                                                         dt.minute,
-                                                         dt.second)
-    if os.path.isdir("versions") is False:
-        if local("mkdir -p versions").failed is True:
-            return None
-    if local("tar -cvzf {} web_static".format(file)).failed is True:
+    now = datetime.now().strftime("%Y%m%d%H%M%S")
+    local('mkdir -p versions')
+    filename = 'versions/web_static_{}.tgz'.format(now)
+    result = local('tar -cvzf {} web_static'
+                   .format(filename), capture=True)
+    if result.failed:
+        print('Failed to create tar package')
         return None
-    return file
+    else:
+        return filename
 
 
 def do_deploy(archive_path):
-    """Distributes an archive to a web server.
-    Args:
-        archive_path (str): The path of the archive to distribute.
-    Returns:
-        If the file doesn't exist at archive_path or an error occurs - False.
-        Otherwise - True.
+    """deploys a static archive to web servers
     """
-    if os.path.isfile(archive_path) is False:
+    if not os.path.isfile(archive_path):
+        print('archive file does not exist...')
         return False
-    file = archive_path.split("/")[-1]
-    name = file.split(".")[0]
+    try:
+        archive = archive_path.split('/')[1]
+        no_ext_archive = archive.split('.')[0]
+    except:
+        print('failed to get archive name from split...')
+        return False
+    uploaded = put(archive_path, '/tmp/')
+    if uploaded.failed:
+        return False
+    res = run('mkdir -p /data/web_static/releases/{}/'.format(no_ext_archive))
+    if res.failed:
+        print('failed to create archive directory for relase...')
+        return False
+    res = run('tar -C /data/web_static/releases/{} -xzf /tmp/{}'.format(
+               no_ext_archive, archive))
+    if res.failed:
+        print('failed to untar archive...')
+        return False
+    res = run('rm /tmp/{}'.format(archive))
+    if res.failed:
+        print('failed to remove archive...')
+        return False
+    res = run('mv /data/web_static/releases/{}/web_static/* \
+               /data/web_static/releases/{}'
+              .format(no_ext_archive, no_ext_archive))
+    if res.failed:
+        print('failed to move extraction to proper directory...')
+        return False
+    res = run('rm -rf /data/web_static/releases/{}/web_static'
+              .format(no_ext_archive))
+    if res.failed:
+        print('failed to remove first copy of extraction after move...')
+        return False
+    # clean up old release and remove it
+    res = run('rm -rf /data/web_static/current')
+    if res.failed:
+        print('failed to clean up old release...')
+        return False
+    res = run('ln -sfn /data/web_static/releases/{} /data/web_static/current'
+              .format(no_ext_archive))
+    if res.failed:
+        print('failed to create link to new release...')
+        return False
 
-    if put(archive_path, "/tmp/{}".format(file)).failed is True:
-        return False
-    if run("rm -rf /data/web_static/releases/{}/".
-           format(name)).failed is True:
-        return False
-    if run("mkdir -p /data/web_static/releases/{}/".
-           format(name)).failed is True:
-        return False
-    if run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/".
-           format(file, name)).failed is True:
-        return False
-    if run("rm /tmp/{}".format(file)).failed is True:
-        return False
-    if run("mv /data/web_static/releases/{}/web_static/* "
-           "/data/web_static/releases/{}/".format(name, name)).failed is True:
-        return False
-    if run("rm -rf /data/web_static/releases/{}/web_static".
-           format(name)).failed is True:
-        return False
-    if run("rm -rf /data/web_static/current").failed is True:
-        return False
-    if run("ln -s /data/web_static/releases/{}/ /data/web_static/current".
-           format(name)).failed is True:
-        return False
+    print('\nNew Version Successfuly Deployed!\n')
+
     return True
 
 
 def deploy():
+    """deploy executes do_pack and do_deploy to deploy the latest
+        changes to the server list
     """
-    Create and distribute an archive to a web server
-    """
-    file = do_pack()
-    if file is None:
+    ar_path = do_pack()
+    print(ar_path)
+    if ar_path is None:
+        print('Failed to create archive from web_static')
         return False
-    return do_deploy(file)
+    return do_deploy(ar_path)
