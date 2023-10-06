@@ -1,41 +1,37 @@
 #!/usr/bin/env bash
-# Prepare My web servers
+# sets up your web servers for the deployment of web_static
 
-# colors
-blue='\e[1;34m'
-#brown='\e[0;33m'
-green='\e[1;32m'
-reset='\033[0m'
+trap 'exit 0' ERR
 
-echo -e "${blue}Updating and doing some minor checks...${reset}\n"
-
-# install nginx if not present
-if [ ! -x /usr/sbin/nginx ]; then
-	sudo apt-get update -y -qq && \
-	     sudo apt-get install -y nginx
+if ! command -v nginx &> /dev/null; then
+    sudo apt update
+    sudo apt install nginx -y
 fi
+sudo mkdir -p "/data/web_static/releases/test/"
+sudo mkdir -p "/data/web_static/shared/"
 
-echo -e "\n${blue}Setting up some minor stuff.${reset}\n"
+body_content="Holberton School Web site under construction!"
+current_date=$(date +"%Y-%m-%d %H:%M:%S")
+html_content="<html>
+  <head></head>
+  <body>$body_content</body>
+  <p>Generated on: $current_date</p>
+</html>"
 
-# Create directories...
-sudo mkdir -p /data/web_static/releases/test /data/web_static/shared/
+echo "$html_content" | sudo tee /data/web_static/releases/test/index.html > /dev/null
 
-# create index.html for test directory
-echo "<h1>Welcome to th3gr00t.tech <\h1>" | sudo dd status=none of=/data/web_static/releases/test/index.html
+rm -rf /data/web_static/current
+ln -sf /data/web_static/releases/test/ /data/web_static/current
 
-# create symbolic link
-sudo ln -sf /data/web_static/releases/test /data/web_static/current
-
-# give user ownership to directory
 sudo chown -R ubuntu:ubuntu /data/
 
-# backup default server config file
-sudo cp /etc/nginx/sites-enabled/default nginx-sites-enabled_default.backup
-
-# Set-up the content of /data/web_static/current/ to redirect
-# to domain.tech/hbnb_static
-sudo sed -i '37i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
+sudo wget -q -O /etc/nginx/sites-available/default http://exampleconfig.com/static/raw/nginx/ubuntu20.04/etc/nginx/sites-available/default
+config="/etc/nginx/sites-available/default"
+echo 'Holberton School Hello World!' | sudo tee /var/www/html/index.html > /dev/null
+sudo sed -i '/^}$/i \ \n\tlocation \/redirect_me {return 301 https:\/\/www.youtube.com\/watch?v=QH2-TGUlwu4;}' $config
+sudo sed -i '/^}$/i \ \n\tlocation @404 {return 404 "Ceci n'\''est pas une page\\n";}' $config
+sudo sed -i 's/=404/@404/g' $config
+sudo sed -i "/^server {/a \ \tadd_header X-Served-By $HOSTNAME;" $config
+sudo sed -i '/^server {/a \ \n\tlocation \/hbnb_static {alias /data/web_static/current/;index index.html;}' $config
 
 sudo service nginx restart
-
-echo -e "${green}Completed${reset}"
