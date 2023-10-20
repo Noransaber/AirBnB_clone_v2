@@ -5,9 +5,12 @@ from flask import Flask
 app = Flask(__name__)
 
 # Routing to the path '/'
+
+
 @app.route('/', strict_slashes=False)
 def hello_hbnb():
     return "Hello HBNB!"
+
 
 # Make it listen to other machines
 if __name__ == '__main__':
