@@ -11,7 +11,7 @@ class FileStorage:
     __objects = {}
 
     def delete(self, obj=None):
-        """Delete obj from __objects if it's inside - if obj is equal to None, the method should not do anything"""
+        """Delete obj from objects- if obj is equal to None, nothing"""
         if obj is not None:
             key = f"{obj.__class__.__name__}.{obj.id}"
             if key in self.__objects:
@@ -70,4 +70,3 @@ class FileStorage:
     def close(self):
         """Calling the reload method to deserialize the JSON file to objects"""
         self.reload()
-

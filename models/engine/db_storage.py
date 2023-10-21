@@ -13,21 +13,6 @@ from models.state import State
 from models.place import Place
 from models.review import Review
 
-#!/usr/bin/python3
-"""
-DB_storage module
-"""
-from sqlalchemy import create_engine
-from os import getenv
-from sqlalchemy.orm import scoped_session, sessionmaker
-from models.base_model import BaseModel, Base
-from models.amenity import Amenity
-from models.user import User
-from models.city import City
-from models.state import State
-from models.place import Place
-from models.review import Review
-
 
 class DBStorage:
     """
@@ -118,4 +103,3 @@ class DBStorage:
         Closes the session.
         """
         self.__session.close()
-
