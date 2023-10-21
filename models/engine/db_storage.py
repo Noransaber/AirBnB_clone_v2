@@ -13,17 +13,32 @@ from models.state import State
 from models.place import Place
 from models.review import Review
 
+#!/usr/bin/python3
+"""
+DB_storage module
+"""
+from sqlalchemy import create_engine
+from os import getenv
+from sqlalchemy.orm import scoped_session, sessionmaker
+from models.base_model import BaseModel, Base
+from models.amenity import Amenity
+from models.user import User
+from models.city import City
+from models.state import State
+from models.place import Place
+from models.review import Review
+
 
 class DBStorage:
     """
-    DBStorgae class
+    DBStorage class
     """
     __engine = None
     __session = None
 
     def __init__(self):
         """
-        initializations.
+        Initialization.
         """
 
         dialect = 'mysql'
@@ -34,21 +49,21 @@ class DBStorage:
         database = getenv("HBNB_MYSQL_DB")
 
         conn = "{}+{}://{}:{}@{}/{}".format(
-                dialect,
-                driver,
-                user,
-                password,
-                host,
-                database)
+            dialect,
+            driver,
+            user,
+            password,
+            host,
+            database)
         self.__engine = create_engine(conn, pool_pre_ping=True)
         if getenv("HBNB_ENV") == "test":
             Base.metadata.drop_all(bind=self.__engine)
 
     def all(self, cls=None):
         """
-        query on the current database session (self.__session)
-        all objects depending of the class name (argument cls)
-        if cls=None, query all types of objects
+        Query on the current database session (self.__session)
+        all objects depending on the class name (argument cls).
+        If cls=None, query all types of objects.
         """
 
         dic = {}
@@ -67,31 +82,31 @@ class DBStorage:
         for obj in objects_list:
             key = "{}.{}".format(type(obj).__name__, obj.id)
             dic[key] = obj
-        return (dic)
+        return dic
 
     def new(self, obj):
         """
-        Adds the obj to the current database session
+        Adds the obj to the current database session.
         """
         self.__session.add(obj)
 
     def save(self):
         """
-        Saves changes to the session
+        Saves changes to the session.
         """
         self.__session.commit()
 
     def delete(self, obj=None):
         """
-        delete from the current database session obj if not None
+        Delete from the current database session obj if not None.
         """
         if obj:
             self.__session.delete(obj)
 
     def reload(self):
         """
-        - create all tables in the database
-        - create the current database session
+        - Create all tables in the database.
+        - Create the current database session.
         """
         Base.metadata.create_all(self.__engine)
         Session = sessionmaker(bind=self.__engine, expire_on_commit=False)
@@ -100,13 +115,7 @@ class DBStorage:
 
     def close(self):
         """
-        closes the session
+        Closes the session.
         """
         self.__session.close()
-	def close(self):
-		""" call remove() method on the
-		private session attribute
-		(self.__session) tips
-		or close() on the class Session
-		"""
-		self.__session.close()
+

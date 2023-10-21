@@ -13,15 +13,12 @@ class State(BaseModel, Base):
     name = Column(String(128), nullable=False)
     cities = relationship('City', backref='state', cascade='all, delete')
 
-    @property
-    def cities(self):
-        """
-        LIST OF CITY
-        """
 
-        records = models.storage.all()
-        res = []
-        for city in records.values():
-            if self.id == city.state_id:
-                res.append(city)
-        return res
+    @property
+    def associated_cities(self):
+        """ Returns a list of cities associated with this state """
+        cities_instances = []
+        for city in models.storage.all(models.City).values():
+            if city.state_id == self.id:
+                cities_instances.append(city)
+        return cities_instances
