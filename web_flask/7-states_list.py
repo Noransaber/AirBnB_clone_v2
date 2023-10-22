@@ -1,30 +1,15 @@
 #!/usr/bin/python3
-"""
-Web Flask Application
-"""
+""" 7. Start flask service that does something. """
 
-from flask import Flask, render_template
-from models import storage
-from models.state import State
+from flask import Flask
+from flask import render_template
+
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 
 
-@app.route('/states_list', strict_slashes=False)
-def states_list():
-    """
-    Display a HTML page with states ordered alphabetically.
-    """
-    states = sorted(list(storage.all(State).values()), key=lambda x: x.name)
-    return render_template('7-states_list.html', states=states)
-
-
-@app.teardown_appcontext
-def teardown_db(exception):
-    """
-    Close the database connection at the end of the application context.
-    """
-    storage.close()
+#@app.route()
 
 
 if __name__ == '__main__':
