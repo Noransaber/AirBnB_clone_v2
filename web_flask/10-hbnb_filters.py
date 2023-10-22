@@ -4,7 +4,6 @@ FLASK WEB APPLICATION
 """
 
 from flask import Flask, render_template
-from models import *
 from models import storage
 app = Flask(__name__)
 
@@ -22,6 +21,7 @@ def filters():
 def teardown_db(exception):
     """CLOSE THE STORAGE"""
     storage.close()
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port='5000')
