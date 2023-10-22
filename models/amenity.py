@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """ AMENITY MODLE"""
 from sqlalchemy import Column, String
-from models.base_model import BaseModel, Base
+from base_model import BaseModel, Base
 import os
 
 

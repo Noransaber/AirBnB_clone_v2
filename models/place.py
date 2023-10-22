@@ -4,9 +4,9 @@ import os
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
-from models.base_model import BaseModel, Base
-from models.review import Review
-from models.amenity import Amenity
+from base_model import BaseModel, Base
+from review import Review
+from amenity import Amenity
 
 
 place_amenity = Table(

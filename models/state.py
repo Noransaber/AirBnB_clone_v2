@@ -2,9 +2,8 @@
 """ STATE MODULE """
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
-from models.base_model import Base, BaseModel
-from models.city import City
-import models
+from base_model import Base, BaseModel
+from city import City
 
 
 class State(BaseModel, Base):
