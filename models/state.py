@@ -13,7 +13,6 @@ class State(BaseModel, Base):
     name = Column(String(128), nullable=False)
     cities = relationship('City', backref='state', cascade='all, delete')
 
-
     @property
     def associated_cities(self):
         """ Returns a list of cities associated with this state """
