@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """ REVIEW MODULE """
 from sqlalchemy import Column, String, ForeignKey
-from base_model import BaseModel, Base
+from .base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
 import os
 

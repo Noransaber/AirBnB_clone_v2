@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """USER MODULE"""
-from base_model import BaseModel, Base
+from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 import os
